@@ -39,15 +39,30 @@ export async function POST(request: NextRequest) {
   const { to, subject, content } = await request.json();
 
   if (!to || !subject || !content) {
-    return NextResponse.json({ error: 'To, subject, and content are required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'To, subject, and content are required' },
+      { status: 400 },
+    );
   }
 
-  const recipient = await User.findOne({ email: to, role: 'admin' });
+  // If a normal user is sending a message, force it to go to an admin.
+  // If an admin is sending (e.g. replying), allow sending to any user email.
+  let recipientQuery: any = { email: to };
+  if (user.role !== 'admin') {
+    recipientQuery.role = 'admin';
+  }
+
+  const recipient = await User.findOne(recipientQuery);
   if (!recipient) {
     return NextResponse.json({ error: 'Recipient not found' }, { status: 400 });
   }
 
-  const message = new Message({ from: user._id, to: recipient._id, subject, content });
+  const message = new Message({
+    from: user._id,
+    to: recipient._id,
+    subject,
+    content,
+  });
   await message.save();
 
   return NextResponse.json({ message: 'Message sent successfully' }, { status: 201 });

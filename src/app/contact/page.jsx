@@ -8,7 +8,7 @@ export default function Contact() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -21,8 +21,10 @@ export default function Contact() {
 
     const res = await fetch('/api/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ to: 'admin@example.com', subject, content }), // Assuming admin email
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ to: 'admin@example.com', subject, content }),
     });
 
     const data = await res.json();
@@ -60,8 +62,11 @@ export default function Contact() {
         </div>
         {error && <p className="text-red-500">{error}</p>}
         {success && <p className="text-green-500">{success}</p>}
-        <button type="submit" className="w-full bg-blue-600 text-white p-2">Send Message</button>
+        <button type="submit" className="w-full bg-blue-600 text-white p-2">
+          Send Message
+        </button>
       </form>
     </div>
   );
 }
+

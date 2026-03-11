@@ -4,16 +4,18 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 
 export default function Apply() {
-  const { id } = useParams();
+  const params = useParams();
+  const id = params?.id;
+  const router = useRouter();
+
   const [applicantName, setApplicantName] = useState('');
   const [applicantContact, setApplicantContact] = useState('');
   const [resume, setResume] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
@@ -21,7 +23,13 @@ export default function Apply() {
     const res = await fetch('/api/applications', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jobId: id, applicantName, applicantContact, resume, message }),
+      body: JSON.stringify({
+        jobId: id,
+        applicantName,
+        applicantContact,
+        resume,
+        message,
+      }),
     });
 
     const data = await res.json();
@@ -75,8 +83,11 @@ export default function Apply() {
         </div>
         {error && <p className="text-red-500">{error}</p>}
         {success && <p className="text-green-500">{success}</p>}
-        <button type="submit" className="w-full bg-blue-600 text-white p-2">Submit Application</button>
+        <button type="submit" className="w-full bg-blue-600 text-white p-2">
+          Submit Application
+        </button>
       </form>
     </div>
   );
 }
+

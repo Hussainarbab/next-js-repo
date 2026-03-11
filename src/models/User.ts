@@ -13,6 +13,7 @@ const UserSchema = new mongoose.Schema({
   location: { type: String }, // District in Gilgit-Baltistan
   experience: { type: String }, // Years of experience
   skills: [{ type: String }], // Array of skills
+  portfolioImages: [{ type: String }], // URLs to work / portfolio images
   verified: { type: Boolean, default: false }, // Verification status
   createdAt: { type: Date, default: Date.now },
 });

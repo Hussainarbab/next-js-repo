@@ -1,10 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Register() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const preSelectedRole = searchParams.get('role');
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,47 +21,52 @@ export default function Register() {
     cnic: '',
     drivingLicence: '',
     experience: '',
-    skills: [] as string[],
+    skills: [],
   });
   const [currentSkill, setCurrentSkill] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [step, setStep] = useState(1);
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const preSelectedRole = searchParams.get('role');
 
-  // Set pre-selected role if coming from homepage
-  useState(() => {
-    if (preSelectedRole && ['driver', 'carpenter', 'painter', 'laborer'].includes(preSelectedRole)) {
-      setFormData(prev => ({ ...prev, role: preSelectedRole }));
+  useEffect(() => {
+    if (
+      preSelectedRole &&
+      ['driver', 'carpenter', 'painter', 'laborer'].includes(preSelectedRole)
+    ) {
+      setFormData((prev) => ({ ...prev, role: preSelectedRole }));
     }
-  });
+  }, [preSelectedRole]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const addSkill = () => {
-    if (currentSkill.trim() && !formData.skills.includes(currentSkill.trim())) {
-      setFormData(prev => ({
+    const trimmed = currentSkill.trim();
+    if (trimmed && !formData.skills.includes(trimmed)) {
+      setFormData((prev) => ({
         ...prev,
-        skills: [...prev.skills, currentSkill.trim()]
+        skills: [...prev.skills, trimmed],
       }));
       setCurrentSkill('');
     }
   };
 
-  const removeSkill = (skillToRemove: string) => {
-    setFormData(prev => ({
+  const removeSkill = (skillToRemove) => {
+    setFormData((prev) => ({
       ...prev,
-      skills: prev.skills.filter(skill => skill !== skillToRemove)
+      skills: prev.skills.filter((skill) => skill !== skillToRemove),
     }));
   };
 
   const validateStep1 = () => {
-    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+    if (
+      !formData.name ||
+      !formData.email ||
+      !formData.password ||
+      !formData.confirmPassword
+    ) {
       setError('Please fill in all required fields');
       return false;
     }
@@ -95,7 +104,7 @@ export default function Register() {
     setStep(1);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateStep2()) return;
 
@@ -130,16 +139,43 @@ export default function Register() {
     { value: 'laborer', label: 'Laborer', icon: '🏗️' },
   ];
 
+  const locations = [
+    'Gilgit',
+    'Skardu',
+    'Hunza',
+    'Nagar',
+    'Astore',
+    'Diamer',
+    'Ghizer',
+    'Ghanche',
+    'Shigar',
+    'Kharmang',
+    'Tangir',
+    'Darel',
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white rounded-xl shadow-2xl p-8">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Create Your Account</h2>
-          <p className="text-gray-600">Join the Gilgit-Baltistan Job Platform</p>
+          <h2 className="text-3xl font-extrabold text-gray-900 mb-2">
+            Create Your Account
+          </h2>
+          <p className="text-gray-600">
+            Join the Gilgit-Baltistan Job Platform
+          </p>
           <div className="mt-4 flex justify-center">
             <div className="flex space-x-2">
-              <div className={`w-8 h-2 rounded-full ${step >= 1 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
-              <div className={`w-8 h-2 rounded-full ${step >= 2 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+              <div
+                className={`w-8 h-2 rounded-full ${
+                  step >= 1 ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              />
+              <div
+                className={`w-8 h-2 rounded-full ${
+                  step >= 2 ? 'bg-blue-600' : 'bg-gray-300'
+                }`}
+              />
             </div>
           </div>
         </div>
@@ -148,7 +184,9 @@ export default function Register() {
           {step === 1 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Full Name
+                </label>
                 <input
                   type="text"
                   name="name"
@@ -161,7 +199,9 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   name="email"
@@ -174,7 +214,9 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
                 <input
                   type="password"
                   name="password"
@@ -187,7 +229,9 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Confirm Password
+                </label>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -200,7 +244,9 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">I am a</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  I am a
+                </label>
                 <select
                   name="role"
                   value={formData.role}
@@ -220,7 +266,9 @@ export default function Register() {
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
                 <input
                   type="tel"
                   name="phone"
@@ -233,7 +281,9 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location (District)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Location (District)
+                </label>
                 <select
                   name="location"
                   value={formData.location}
@@ -242,19 +292,18 @@ export default function Register() {
                   required
                 >
                   <option value="">Select your district</option>
-                  <option value="Gilgit">Gilgit</option>
-                  <option value="Skardu">Skardu</option>
-                  <option value="Hunza">Hunza</option>
-                  <option value="Nagar">Nagar</option>
-                  <option value="Astore">Astore</option>
-                  <option value="Diamer">Diamer</option>
-                  <option value="Ghanche">Ghanche</option>
-                  <option value="Ghizer">Ghizer</option>
+                  {locations.map((loc) => (
+                    <option key={loc} value={loc}>
+                      {loc}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">CNIC Number</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  CNIC Number
+                </label>
                 <input
                   type="text"
                   name="cnic"
@@ -268,7 +317,9 @@ export default function Register() {
 
               {formData.role === 'driver' && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Driving Licence Number</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Driving Licence Number
+                  </label>
                   <input
                     type="text"
                     name="drivingLicence"
@@ -282,7 +333,9 @@ export default function Register() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Years of Experience
+                </label>
                 <input
                   type="text"
                   name="experience"
@@ -294,7 +347,9 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Bio (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Bio (Optional)
+                </label>
                 <textarea
                   name="bio"
                   value={formData.bio}
@@ -306,7 +361,9 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Skills (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Skills (Optional)
+                </label>
                 <div className="flex space-x-2 mb-2">
                   <input
                     type="text"
@@ -314,7 +371,12 @@ export default function Register() {
                     onChange={(e) => setCurrentSkill(e.target.value)}
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Add a skill"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addSkill();
+                      }
+                    }}
                   />
                   <button
                     type="button"
@@ -325,9 +387,9 @@ export default function Register() {
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {formData.skills.map((skill, index) => (
+                  {formData.skills.map((skill) => (
                     <span
-                      key={index}
+                      key={skill}
                       className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
                     >
                       {skill}
@@ -345,8 +407,12 @@ export default function Register() {
             </div>
           )}
 
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-          {success && <p className="text-green-500 text-sm text-center">{success}</p>}
+          {error && (
+            <p className="text-red-500 text-sm text-center">{error}</p>
+          )}
+          {success && (
+            <p className="text-green-500 text-sm text-center">{success}</p>
+          )}
 
           <div className="flex space-x-4">
             {step === 2 && (
@@ -380,7 +446,10 @@ export default function Register() {
         <div className="text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{' '}
-            <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link
+              href="/login"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
               Sign in here
             </Link>
           </p>
@@ -389,3 +458,4 @@ export default function Register() {
     </div>
   );
 }
+
