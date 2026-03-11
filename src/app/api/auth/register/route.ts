@@ -6,9 +6,9 @@ import { hashPassword } from '@/lib/auth';
 export async function POST(request: NextRequest) {
   await dbConnect();
 
-  const { name, email, password, role, phone, location, bio, cnic, drivingLicence, experience, skills } = await request.json();
+  const { name, email, password, phone } = await request.json();
 
-  if (!name || !email || !password || !phone || !location || !cnic) {
+  if (!name || !email || !password || !phone) {
     return NextResponse.json({ error: 'Required fields are missing' }, { status: 400 });
   }
 
@@ -17,23 +17,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'User already exists' }, { status: 400 });
   }
 
-  if (role === 'driver' && !drivingLicence) {
-    return NextResponse.json({ error: 'Driving licence is required for drivers' }, { status: 400 });
-  }
-
   const hashedPassword = await hashPassword(password);
   const user = new User({
     name,
     email,
     password: hashedPassword,
-    role,
+    role: 'user',
     phone,
-    location,
-    bio,
-    cnic,
-    drivingLicence,
-    experience,
-    skills,
   });
   await user.save();
 

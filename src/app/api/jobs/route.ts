@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
 
   const token = authHeader.split(' ')[1];
   const user = verifyToken(token);
-  if (!user || user.role !== 'admin') {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -38,7 +38,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'All fields are required' }, { status: 400 });
   }
 
-  const job = new Job({ title, description, category, location, salary, contact, createdBy: user._id });
+  const job = new Job({
+    title,
+    description,
+    category,
+    location,
+    salary,
+    contact,
+    createdBy: user._id,
+  });
   await job.save();
 
   return NextResponse.json(job, { status: 201 });

@@ -1,69 +1,32 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Register() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const preSelectedRole = searchParams.get('role');
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
-    role: 'user',
-    phone: '',
-    location: '',
-    bio: '',
-    cnic: '',
-    drivingLicence: '',
-    experience: '',
-    skills: [],
   });
-  const [currentSkill, setCurrentSkill] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [step, setStep] = useState(1);
-
-  useEffect(() => {
-    if (
-      preSelectedRole &&
-      ['driver', 'carpenter', 'painter', 'laborer'].includes(preSelectedRole)
-    ) {
-      setFormData((prev) => ({ ...prev, role: preSelectedRole }));
-    }
-  }, [preSelectedRole]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const addSkill = () => {
-    const trimmed = currentSkill.trim();
-    if (trimmed && !formData.skills.includes(trimmed)) {
-      setFormData((prev) => ({
-        ...prev,
-        skills: [...prev.skills, trimmed],
-      }));
-      setCurrentSkill('');
-    }
-  };
-
-  const removeSkill = (skillToRemove) => {
-    setFormData((prev) => ({
-      ...prev,
-      skills: prev.skills.filter((skill) => skill !== skillToRemove),
-    }));
-  };
-
-  const validateStep1 = () => {
+  const validate = () => {
     if (
       !formData.name ||
       !formData.email ||
+      !formData.phone ||
       !formData.password ||
       !formData.confirmPassword
     ) {
@@ -81,78 +44,50 @@ export default function Register() {
     return true;
   };
 
-  const validateStep2 = () => {
-    if (!formData.phone || !formData.location || !formData.cnic) {
-      setError('Please fill in all required fields');
-      return false;
-    }
-    if (formData.role === 'driver' && !formData.drivingLicence) {
-      setError('Driving licence is required for drivers');
-      return false;
-    }
-    return true;
-  };
-
-  const handleNext = () => {
-    if (step === 1 && validateStep1()) {
-      setError('');
-      setStep(2);
-    }
-  };
-
-  const handlePrev = () => {
-    setStep(1);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateStep2()) return;
+    if (!validate()) return;
 
     setError('');
     setSuccess('');
 
     const submitData = {
-      ...formData,
-      skills: formData.skills.length > 0 ? formData.skills : undefined,
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      password: formData.password,
     };
 
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(submitData),
-    });
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submitData),
+      });
 
-    const data = await res.json();
-    if (res.ok) {
-      setSuccess('Account created successfully! Redirecting to login...');
+      const text = await res.text();
+
+      if (!res.ok) {
+        try {
+          const data = JSON.parse(text);
+          setError(data.error || 'Registration failed');
+        } catch {
+          setError(text || 'Registration failed');
+        }
+        return;
+      }
+
+      const data = text ? JSON.parse(text) : {};
+      setSuccess(
+        data.message ||
+          'Account created successfully! Redirecting to login...',
+      );
       setTimeout(() => router.push('/login'), 2000);
-    } else {
-      setError(data.error);
+    } catch (err) {
+      console.error('Registration error', err);
+      setError('Registration failed. Please try again.');
     }
   };
-
-  const roles = [
-    { value: 'user', label: 'Job Seeker', icon: '👤' },
-    { value: 'driver', label: 'Driver', icon: '🚛' },
-    { value: 'carpenter', label: 'Carpenter', icon: '🔨' },
-    { value: 'painter', label: 'Painter', icon: '🎨' },
-    { value: 'laborer', label: 'Laborer', icon: '🏗️' },
-  ];
-
-  const locations = [
-    'Gilgit',
-    'Skardu',
-    'Hunza',
-    'Nagar',
-    'Astore',
-    'Diamer',
-    'Ghizer',
-    'Ghanche',
-    'Shigar',
-    'Kharmang',
-    'Tangir',
-    'Darel',
-  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -164,248 +99,83 @@ export default function Register() {
           <p className="text-gray-600">
             Join the Gilgit-Baltistan Job Platform
           </p>
-          <div className="mt-4 flex justify-center">
-            <div className="flex space-x-2">
-              <div
-                className={`w-8 h-2 rounded-full ${
-                  step >= 1 ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-              />
-              <div
-                className={`w-8 h-2 rounded-full ${
-                  step >= 2 ? 'bg-blue-600' : 'bg-gray-300'
-                }`}
-              />
-            </div>
-          </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your full name"
-                  required
-                />
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Full Name
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter your full name"
+              required
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your email"
-                  required
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter your phone number"
+              required
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Create a password"
-                  required
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="you@example.com"
+              required
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Confirm your password"
-                  required
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Create a password"
+              required
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  I am a
-                </label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  {roles.map((role) => (
-                    <option key={role.value} value={role.value}>
-                      {role.icon} {role.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your phone number"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Location (District)
-                </label>
-                <select
-                  name="location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select your district</option>
-                  {locations.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  CNIC Number
-                </label>
-                <input
-                  type="text"
-                  name="cnic"
-                  value={formData.cnic}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your CNIC (e.g., 12345-1234567-1)"
-                  required
-                />
-              </div>
-
-              {formData.role === 'driver' && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Driving Licence Number
-                  </label>
-                  <input
-                    type="text"
-                    name="drivingLicence"
-                    value={formData.drivingLicence}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter your driving licence number"
-                    required
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Years of Experience
-                </label>
-                <input
-                  type="text"
-                  name="experience"
-                  value={formData.experience}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="e.g., 2-3 years"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Bio (Optional)
-                </label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Tell us about yourself..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Skills (Optional)
-                </label>
-                <div className="flex space-x-2 mb-2">
-                  <input
-                    type="text"
-                    value={currentSkill}
-                    onChange={(e) => setCurrentSkill(e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Add a skill"
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        addSkill();
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={addSkill}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    Add
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {formData.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                    >
-                      {skill}
-                      <button
-                        type="button"
-                        onClick={() => removeSkill(skill)}
-                        className="ml-1 text-blue-600 hover:text-blue-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Confirm your password"
+              required
+            />
+          </div>
 
           {error && (
             <p className="text-red-500 text-sm text-center">{error}</p>
@@ -414,33 +184,12 @@ export default function Register() {
             <p className="text-green-500 text-sm text-center">{success}</p>
           )}
 
-          <div className="flex space-x-4">
-            {step === 2 && (
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="flex-1 py-2 px-4 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Previous
-              </button>
-            )}
-            {step === 1 ? (
-              <button
-                type="button"
-                onClick={handleNext}
-                className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                type="submit"
-                className="flex-1 py-2 px-4 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
-              >
-                Create Account
-              </button>
-            )}
-          </div>
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Create Account
+          </button>
         </form>
 
         <div className="text-center">
@@ -458,4 +207,3 @@ export default function Register() {
     </div>
   );
 }
-

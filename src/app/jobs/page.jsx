@@ -14,13 +14,29 @@ export default function Jobs() {
   }, [category, location]);
 
   const fetchJobs = async () => {
-    const params = new URLSearchParams();
-    if (category) params.append('category', category);
-    if (location) params.append('location', location);
+    try {
+      const params = new URLSearchParams();
+      if (category) params.append('category', category);
+      if (location) params.append('location', location);
 
-    const res = await fetch(`/api/jobs?${params}`);
-    const data = await res.json();
-    setJobs(data);
+      const query = params.toString();
+      const url = query ? `/api/jobs?${query}` : '/api/jobs';
+
+      const res = await fetch(url);
+
+      if (!res.ok) {
+        // If backend failed or returned non‑JSON, avoid crashing the UI
+        console.error('Failed to load jobs:', res.status, await res.text());
+        setJobs([]);
+        return;
+      }
+
+      const data = await res.json();
+      setJobs(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Error loading jobs:', err);
+      setJobs([]);
+    }
   };
 
   const categories = [
