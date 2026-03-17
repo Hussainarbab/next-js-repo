@@ -321,7 +321,7 @@ export default function ProfilePage() {
           <textarea
             value={profile.bio || ''}
             onChange={(e) => updateField('bio', e.target.value)}
-            className="min-h-[90px] w-full rounded-xl border border-slate-700/70 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/40"
+            className="min-h-22.5 w-full rounded-xl border border-slate-700/70 bg-slate-950/60 px-3 py-2 text-sm text-slate-50 outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/40"
             placeholder="Tell employers about your background, languages, and strengths."
           />
         </div>
@@ -459,7 +459,7 @@ export default function ProfilePage() {
           <button
             type="submit"
             disabled={saving}
-            className="inline-flex items-center rounded-xl bg-gradient-to-r from-sky-500 to-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-sky-500/40 transition hover:from-sky-400 hover:to-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center rounded-xl bg-linear-to-r from-sky-500 to-emerald-400 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-sky-500/40 transition hover:from-sky-400 hover:to-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? 'Saving…' : 'Save changes'}
           </button>
