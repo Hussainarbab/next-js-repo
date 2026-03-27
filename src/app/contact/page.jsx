@@ -70,20 +70,3 @@ export default function Contact() {
   );
 }
 
-fgFD
-gTT
-GHGGF
-h
-gB
-fB
-fgV
-fB
-fn
-gF
-B
-gfFFH
-fbV
-fB
-<GfN><BGfB>gfB
-  <GFb><VgfB>FDg</VgfB></GFb></BGfB></GfN>
-
